@@ -164,9 +164,6 @@ export function HonestRegimeDistribution({ data }: { data: VDemRow[] }) {
           );
         })}
       </svg>
-      <div className="footnote">
-        통치 유형별 성장률 분포. 독재 집단은 범위가 넓어 불확실성이 크고, 자유민주주의는 상대적으로 안정적이다.
-      </div>
     </div>
   );
 }

@@ -86,7 +86,7 @@ export function HonestIndexChart({ data }: { data: VDemRow[] }) {
           </g>
         ))}
 
-        {d3.ticks(0, 10, 3).map((t) => (
+        {d3.ticks(0, 10, 5).map((t) => (
           <g key={`growth-${t}`} transform={`translate(0,${growthScale(t)})`}>
             <text x={width - margin.right + 36} className="tick" textAnchor="end">
               {t.toFixed(1)}%
@@ -136,10 +136,6 @@ export function HonestIndexChart({ data }: { data: VDemRow[] }) {
           </text>
         </g>
       </svg>
-      <div className="footnote">
-        역축이나 단위 뒤집기 없이 같은 데이터를 보여줍니다. 민주주의 지수(왼쪽)와 성장률(오른쪽)이 모두 위로 갈수록
-        커지는 표준 축입니다.
-      </div>
     </div>
   );
 }

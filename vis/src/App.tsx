@@ -42,30 +42,19 @@ function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">Honest Visualization · V-Dem v15</p>
-          <h1>민주주의와 경제성장 교차 시각화</h1>
+          <h1>민주주의와 경제성장 사이의 관계</h1>
           <p className="lede">
-            V-Dem v15 민주주의 지수와 GDP/인구 데이터를 묶어, 같은 데이터를 어떻게 보여주느냐에 따라 메시지가
-            어떻게 달라지는지 살펴봅니다. 의도적 왜곡 없이 정직한 시각화를 제시하고, 잘못된 예시도 함께
-            비교합니다.
+            민주주의 지수와 GDP 데이터를 묶어, 시각화에 따른 메시지의 변화를 살펴봅니다. <br></br>
+            의도적 왜곡 없이 정직한 시각화를 제시와 왜곡된 시각화를 같이 제공합니다.
           </p>
-        </div>
-        <div className="meta">
-          <div className="pill">Source: public/asset/V-Dem-CY-Full+Others-v15.csv</div>
-          {coverage && (
-            <p className="meta-detail">
-              {coverage.rows.toLocaleString()} rows · democracy 1990-
-              {coverage.years?.[1] ?? '없음'} · GDP data 1990-
-              {coverage.gdpYears?.[1] ?? '2019'}
-            </p>
-          )}
         </div>
       </header>
 
       <main className="content">
         <Section title="성장 vs 민주주의" kicker="Growth vs. Democracy">
           <p className="section-copy">
-            같은 데이터를 두고도 메시지는 달라질 수 있습니다. 정직한 버전은 소득수준별로 나눠 추세를 보여주고,
-            왜곡된 버전은 일부 국가만 강조해 상관관계를 과장합니다.
+            정직한 그래프는 소득수준별로 나눠 추세를 보여줌을 통해서 민주주의와 성장률 사이의 관계가 뚜렷하지 않음을 알 수 있습니다.<br></br>
+            그러나 왜곡된 그래프는 전체 국가를 이용해 추세선을 그리고 일부 국가만을 사용해 마치 뚜렷한 패턴이 있는 것처럼 보이게 합니다.
           </p>
           <Switcher mode={mode1} onChange={setMode1} />
           {mode1 === 'honest' ? <HonestFacetedScatter data={enriched} /> : <PriceOfLibertyChart data={enriched} />}
@@ -73,8 +62,9 @@ function App() {
 
         <Section title="시계열 지표 비교" kicker="Indexed Time Series">
           <p className="section-copy">
-            인도의 1인당 GDP와 민주주의 지수(0~100) 변화 양상을 함께 그립니다. 잘못된 예시는 축을 뒤집고, 범위를 조정해 낙폭을 과장합니다.
-            또한 2014~2019년 구간만 골라 보여줌으로써 전체 추세를 왜곡합니다.
+            인도의 1인당 GDP와 민주주의 지수(0~100) 변화 양상을 함께 그립니다. <br></br>
+            정직한 그래프는 올바른 축과 범위를 사용해 두 지표 사이에 뚜렷한 상관관계가 없음을 보여줍니다. <br></br>
+            잘못된 그래프는 축을 뒤집고, 범위를 조정해 낙폭을 과장합니다. 또한 특정 구간만 골라 보여줌으로써 전체 추세를 왜곡합니다.
           </p>
           <Switcher mode={mode2} onChange={setMode2} />
           {mode2 === 'honest' ? <HonestIndexChart data={enriched} /> : <DualAxisChart data={enriched} country="India" />}

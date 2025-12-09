@@ -123,9 +123,6 @@ export function DualAxisChart({ data, country }: { data: VDemRow[]; country: str
           </text>
         </g>
       </svg>
-      <div className="footnote">
-        일반 축을 사용해 성장률과 민주주의 지수를 함께 읽습니다. 2020~2022 구간은 의도적으로 비워두었습니다.
-      </div>
     </div>
   );
 }

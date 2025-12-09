@@ -133,9 +133,6 @@ export function PriceOfLibertyChart({ data }: { data: VDemRow[] }) {
           ))}
         </g>
       </svg>
-      <div className="footnote">
-        상관관계가 약한 지표에 회귀선을 억지로 그리면 관계가 강한 것처럼 보일 수 있습니다. 설명력이 낮은 변수 조합에는 신중해야 합니다.
-      </div>
     </div>
   );
 }
