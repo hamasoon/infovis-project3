@@ -115,7 +115,7 @@ export function BinningChart({ data }: { data: VDemRow[] }) {
           1분위
         </text>
         <text
-          x={(xScale('9') ?? width - margin.right) + xScale.bandwidth() / 2}
+          x={(xScale('9') ?? width - margin.right) + xScale.bandwidth() / 2 - 20}
           y={height - margin.bottom + 30}
           className="axis-label"
           textAnchor="middle"

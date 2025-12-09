@@ -1,120 +1,144 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
 import * as d3 from 'd3';
 import type { VDemRow } from '../../types';
 
+const preferredCountries = ['India', 'Brazil', 'United States of America', 'South Africa', 'Indonesia'];
+
 export function HonestIndexChart({ data }: { data: VDemRow[] }) {
-  const focus = ['Poland', 'Hungary'];
-  const series = useMemo(() => {
-    const map = new Map<string, VDemRow[]>();
-    focus.forEach((c) => map.set(c, []));
-    data
-      .filter((d) => focus.includes(d.country))
-      .filter((d) => d.year >= 1990)
-      .forEach((d) => map.get(d.country)?.push(d));
-    map.forEach((arr) => arr.sort((a, b) => a.year - b.year));
-    return map;
+  const country = useMemo(() => {
+    const yearFiltered = data.filter((d) => d.year >= 2000 && d.year <= 2019 && d.polyarchy !== null);
+    for (const name of preferredCountries) {
+      if (yearFiltered.some((d) => d.country === name)) return name;
+    }
+    const best = d3
+      .rollups(
+        yearFiltered,
+        (rows) => rows.length,
+        (d) => d.country,
+      )
+      .sort((a, b) => b[1] - a[1])[0]?.[0];
+    return best ?? '';
   }, [data]);
 
-  const prepared = Array.from(series.entries()).map(([country, rows]) => {
-    const base =
-      rows.find((r) => r.year === 2004 && r.gdppc !== null)?.gdppc ??
-      rows.find((r) => r.gdppc)?.gdppc ??
-      1;
-    const points = rows
-      .filter((r) => r.gdppc !== null && r.polyarchy !== null)
-      .map((r) => ({
-        year: r.year,
-        index: ((r.gdppc as number) / base) * 100,
-        poly: (r.polyarchy as number) * 100,
-      }));
-    return { country, points };
-  });
+  const series = useMemo(
+    () =>
+      data
+        .filter((d) => d.country === country && d.year >= 2000 && d.year <= 2019)
+        .filter((d) => d.polyarchy !== null)
+        .slice()
+        .sort((a, b) => a.year - b.year),
+    [country, data],
+  );
 
-  const allPoints = prepared.flatMap((p) => p.points);
-  if (!allPoints.length) return <div className="callout">지표화할 데이터가 부족합니다.</div>;
+  if (!country || !series.length) {
+    return <div className="callout">해당 구간에 사용할 수 있는 시계열 데이터가 없습니다.</div>;
+  }
 
-  const xScale = d3
-    .scaleLinear()
-    .domain(d3.extent(allPoints, (p) => p.year) as [number, number])
-    .range([80, 820]);
-  const yScale = d3
-    .scaleLog()
-    .domain([50, d3.max(allPoints, (p) => Math.max(p.index, p.poly)) ?? 400])
-    .range([380, 40]);
-  const yMax = yScale.domain()[1] ?? 400;
-  const colors = d3.scaleOrdinal<string, string>().domain(focus).range(['#22d3ee', '#f97316']);
+  const width = 880;
+  const height = 480;
+  const margin = { top: 32, right: 90, bottom: 44, left: 80 };
+
+  const years = series.map((d) => d.year);
+  const xScale = d3.scalePoint<number>().domain(years).range([margin.left, width - margin.right]);
+
+  const polyScale = d3.scaleLinear().domain([0, 1]).range([height - margin.bottom, margin.top]);
+  const growthScale = d3.scaleLinear().domain([0, 10]).range([height - margin.bottom, margin.top]);
+
+  const polyPath =
+    d3
+      .line<VDemRow>()
+      .x((d) => xScale(d.year) as number)
+      .y((d) => polyScale(d.polyarchy as number))
+      .curve(d3.curveMonotoneX)(series.filter((d) => d.polyarchy !== null)) ?? '';
+
+  const growthSeries = series.filter((d) => d.gdpGrowth !== null);
+  const growthPath =
+    d3
+      .line<VDemRow>()
+      .x((d) => xScale(d.year) as number)
+      .y((d) => growthScale(d.gdpGrowth as number))
+      .curve(d3.curveCatmullRom.alpha(0.5))(growthSeries) ?? '';
 
   return (
     <div className="card">
-      <div className="legend">
-        {focus.map((c) => (
-          <span key={c} className="legend-item">
-            <span className="legend-swatch" style={{ background: colors(c) }} />
-            {c}
-          </span>
-        ))}
-        <span className="legend-item">
-          <span className="legend-swatch" style={{ background: '#c084fc' }} /> 민주주의 지수(0~100)
-        </span>
+      <div className="dual-legend">
+        <span className="legend-dot blue" /> 민주주의 지수(0~1)
+        <span className="legend-dot green" /> GDP 성장률(0%~10%) — {country}
       </div>
-      <svg viewBox="0 0 900 420" className="chart">
-        {d3.ticks(xScale.domain()[0], xScale.domain()[1], 5).map((t) => (
-          <g key={`x-${t}`} transform={`translate(${xScale(t)},0)`}>
-            <line y1={40} y2={380} className="grid" strokeDasharray="2 4" />
-            <text y={400} className="tick" textAnchor="middle">
-              {t}
-            </text>
-          </g>
-        ))}
-        {d3.ticks(50, yMax, 5).map((t) => (
-          <g key={`y-${t}`} transform={`translate(0,${yScale(t)})`}>
-            <line x1={80} x2={840} className="grid" strokeDasharray="2 4" />
-            <text x={70} className="tick" textAnchor="end">
-              {Math.round(t)}
-            </text>
-          </g>
-        ))}
-
-        <text x={450} y={416} className="axis-label" textAnchor="middle">
-          연도
-        </text>
-        <text x={-210} y={26} className="axis-label" transform="rotate(-90)" textAnchor="middle">
-          1인당 GDP 지수(2004=100, 로그) / 민주주의 지수(0~100)
-        </text>
-
-        {prepared.map((s) => {
-          const gdpPath = d3
-            .line<typeof s.points[number]>()
-            .x((p) => xScale(p.year))
-            .y((p) => yScale(p.index))
-            .curve(d3.curveMonotoneX)(s.points);
-          const polyPath = d3
-            .line<typeof s.points[number]>()
-            .x((p) => xScale(p.year))
-            .y((p) => yScale(p.poly))
-            .curve(d3.curveMonotoneX)(s.points);
+      <svg viewBox={`0 0 ${width} ${height}`} className="chart">
+        {years.map((year) => {
+          const x = xScale(year) ?? 0;
           return (
-            <g key={s.country}>
-              <path d={gdpPath ?? ''} fill="none" stroke={colors(s.country)} strokeWidth={3} />
-              <path d={polyPath ?? ''} fill="none" stroke="#c084fc" strokeWidth={2} strokeDasharray="6 4" />
-              {s.points.map((p, idx) => (
-                <circle
-                  key={idx}
-                  cx={xScale(p.year)}
-                  cy={yScale(p.index)}
-                  r={4}
-                  fill={colors(s.country)}
-                  stroke="#0f172a"
-                  strokeWidth={1.5}
-                />
-              ))}
+            <g key={year} transform={`translate(${x},0)`}>
+              <line y1={margin.top} y2={height - margin.bottom} className="grid" strokeDasharray="2 4" />
+              <text y={height - margin.bottom + 18} className="tick" textAnchor="middle">
+                {year}
+              </text>
             </g>
           );
         })}
+
+        {d3.ticks(0, 1, 4).map((t) => (
+          <g key={`poly-${t}`} transform={`translate(0,${polyScale(t)})`}>
+            <text x={margin.left - 12} className="tick" textAnchor="end">
+              {t.toFixed(2)}
+            </text>
+          </g>
+        ))}
+
+        {d3.ticks(0, 10, 3).map((t) => (
+          <g key={`growth-${t}`} transform={`translate(0,${growthScale(t)})`}>
+            <text x={width - margin.right + 36} className="tick" textAnchor="end">
+              {t.toFixed(1)}%
+            </text>
+          </g>
+        ))}
+
+        <path d={polyPath} fill="none" stroke="#5ea9ff" strokeWidth={3} />
+        <path d={growthPath} fill="none" stroke="#3dd68c" strokeWidth={3} strokeDasharray="6 2" />
+
+        {growthSeries.map((d, idx) => (
+          <circle
+            key={idx}
+            cx={xScale(d.year) ?? 0}
+            cy={growthScale(d.gdpGrowth as number)}
+            r={6}
+            fill="#3dd68c"
+            stroke="#0f172a"
+            strokeWidth={2}
+          />
+        ))}
+
+        {series.map((d, idx) => (
+          <circle
+            key={`poly-${idx}`}
+            cx={xScale(d.year) ?? 0}
+            cy={polyScale(d.polyarchy as number)}
+            r={6}
+            fill="#5ea9ff"
+            stroke="#0f172a"
+            strokeWidth={2}
+          />
+        ))}
+
+        <g>
+          <line
+            x1={margin.left}
+            x2={width - margin.right}
+            y1={growthScale(4.5)}
+            y2={growthScale(4.5)}
+            stroke="#f59e0b"
+            strokeDasharray="4 4"
+            opacity={0.6}
+          />
+          <text x={width - margin.right} y={growthScale(4.5) - 8} className="tag" textAnchor="end">
+            성장 회복선
+          </text>
+        </g>
       </svg>
       <div className="footnote">
-        2004년 EU 가입 연도를 100으로 지수화했습니다. 보라색 선은 민주주의 지수, 다른 색은 1인당 GDP(로그)
-        변화입니다.
+        역축이나 단위 뒤집기 없이 같은 데이터를 보여줍니다. 민주주의 지수(왼쪽)와 성장률(오른쪽)이 모두 위로 갈수록
+        커지는 표준 축입니다.
       </div>
     </div>
   );

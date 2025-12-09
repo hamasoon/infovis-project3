@@ -73,8 +73,8 @@ function App() {
 
         <Section title="시계열 지표 비교" kicker="Indexed Time Series">
           <p className="section-copy">
-            두 나라의 1인당 GDP를 2004년=100으로 지수화하고 민주주의 지수(0~100)와 함께 그립니다. 잘못된 예시는
-            축을 뒤집거나 다른 단위를 섞어 오해를 유도합니다.
+            인도의 1인당 GDP와 민주주의 지수(0~100) 변화 양상을 함께 그립니다. 잘못된 예시는 축을 뒤집고, 범위를 조정해 낙폭을 과장합니다.
+            또한 2014~2019년 구간만 골라 보여줌으로써 전체 추세를 왜곡합니다.
           </p>
           <Switcher mode={mode2} onChange={setMode2} />
           {mode2 === 'honest' ? <HonestIndexChart data={enriched} /> : <DualAxisChart data={enriched} country="India" />}

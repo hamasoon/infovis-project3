@@ -26,10 +26,10 @@ export function DualAxisChart({ data, country }: { data: VDemRow[]; country: str
 
   const polyScale = d3
     .scaleLinear()
-    .domain([0.65, 0.3])
-    .range([margin.top, height - margin.bottom]);
+    .domain([0.4, 0.65])
+    .range([height - margin.bottom, margin.top]);
 
-  const growthScale = d3.scaleLinear().domain([8, 2]).range([margin.top, height - margin.bottom]);
+  const growthScale = d3.scaleLinear().domain([7, 2]).range([height - margin.bottom, margin.top]);
 
   const polyPath =
     d3
@@ -49,8 +49,8 @@ export function DualAxisChart({ data, country }: { data: VDemRow[]; country: str
   return (
     <div className="card">
       <div className="dual-legend">
-        <span className="legend-dot blue" /> 민주주의 지수(역축 0.30~0.65)
-        <span className="legend-dot green" /> GDP 성장률(역축 8%~2%)
+        <span className="legend-dot blue" /> 민주주의 지수(0.30~0.65)
+        <span className="legend-dot green" /> GDP 성장률(2%~8%)
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} className="chart">
         {years.map((year) => {
@@ -65,7 +65,7 @@ export function DualAxisChart({ data, country }: { data: VDemRow[]; country: str
           );
         })}
 
-        {d3.ticks(0.3, 0.65, 4).map((t) => (
+        {d3.ticks(0.4, 0.65, 4).map((t) => (
           <g key={`poly-${t}`} transform={`translate(0,${polyScale(t)})`}>
             <text x={margin.left - 12} className="tick" textAnchor="end">
               {t.toFixed(2)}
@@ -73,7 +73,7 @@ export function DualAxisChart({ data, country }: { data: VDemRow[]; country: str
           </g>
         ))}
 
-        {d3.ticks(2, 8, 3).map((t) => (
+        {d3.ticks(2, 7, 3).map((t) => (
           <g key={`growth-${t}`} transform={`translate(0,${growthScale(t)})`}>
             <text x={width - margin.right + 36} className="tick" textAnchor="end">
               {t.toFixed(1)}%
@@ -119,12 +119,12 @@ export function DualAxisChart({ data, country }: { data: VDemRow[]; country: str
             opacity={0.6}
           />
           <text x={width - margin.right} y={growthScale(4.5) - 8} className="tag" textAnchor="end">
-            성장 회복선(역축 기준)
+            성장 회복선
           </text>
         </g>
       </svg>
       <div className="footnote">
-        역축을 사용해 성장률과 민주주의 지수를 겹쳐 읽었습니다. 2020~2022 구간은 의도적으로 비워두었습니다.
+        일반 축을 사용해 성장률과 민주주의 지수를 함께 읽습니다. 2020~2022 구간은 의도적으로 비워두었습니다.
       </div>
     </div>
   );

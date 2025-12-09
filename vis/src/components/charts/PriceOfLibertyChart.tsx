@@ -44,9 +44,15 @@ export function PriceOfLibertyChart({ data }: { data: VDemRow[] }) {
     'China',
     'Vietnam',
     'Ethiopia',
+    'United Kingdom',
     'United States of America',
     'Germany',
     'France',
+    'Rwanda',
+    'South Korea',
+    'Cambodia',
+    'Bangladesh',
+    'Japan',
   ];
 
   const featured = featuredNames
@@ -101,16 +107,6 @@ export function PriceOfLibertyChart({ data }: { data: VDemRow[] }) {
         </text>
 
         <g clipPath="url(#plot-area)">
-          {filtered.map((d, i) => (
-            <circle
-              key={i}
-              cx={xScale(d.polyarchy as number)}
-              cy={yScale(d.gdpGrowth as number)}
-              r={3.4}
-              fill="rgba(220, 222, 227, 0.65)"
-            />
-          ))}
-
           <line
             x1={xScale(regressionLine[0].x)}
             y1={yScale(regressionLine[0].y)}

@@ -26,14 +26,22 @@ export function HonestRegimeDistribution({ data }: { data: VDemRow[] }) {
   const allValues = Object.values(grouped).flat();
   if (!allValues.length) return <div className="callout">성장률 분포 데이터가 없습니다.</div>;
 
+  // Y축 도메인 설정 (2백분위수 ~ 98백분위수)
   const yDomain = [
-    d3.quantile(allValues, 0.02) ?? -15,
-    d3.quantile(allValues, 0.98) ?? 15,
+    d3.quantile(allValues, 0.002) ?? -15,
+    d3.quantile(allValues, 0.998) ?? 15,
   ] as [number, number];
 
   const width = 900;
   const height = 480;
   const margin = { top: 30, right: 20, bottom: 60, left: 70 };
+  const boxWidth = 60;
+  const jitterWidth = 90;
+  const halfBox = boxWidth / 2;
+  const halfWhisker = boxWidth * 0.3;
+  const dotRadius = 3;
+  const labelOffset = 30;
+  const labelGap = 8;
 
   const xScale = d3
     .scalePoint<number>()
@@ -79,32 +87,79 @@ export function HonestRegimeDistribution({ data }: { data: VDemRow[] }) {
           const x = xScale(s.code) ?? 0;
           const jitter = grouped[s.code].map((_, i) => {
             const rand = Math.sin(i * 997 + s.code * 13) * 0.5 + 0.5;
-            return x + (rand - 0.5) * 30;
+            return x + (rand - 0.5) * jitterWidth;
           });
           return (
             <g key={s.code}>
-              <line x1={x - 12} x2={x + 12} y1={yScale(s.lower)} y2={yScale(s.lower)} stroke={color(s.code)} />
+              <line
+                x1={x - halfWhisker}
+                x2={x + halfWhisker}
+                y1={yScale(s.lower)}
+                y2={yScale(s.lower)}
+                stroke={color(s.code)}
+              />
               <line x1={x} x2={x} y1={yScale(s.lower)} y2={yScale(s.upper)} stroke={color(s.code)} />
-              <line x1={x - 12} x2={x + 12} y1={yScale(s.upper)} y2={yScale(s.upper)} stroke={color(s.code)} />
+              <line
+                x1={x - halfWhisker}
+                x2={x + halfWhisker}
+                y1={yScale(s.upper)}
+                y2={yScale(s.upper)}
+                stroke={color(s.code)}
+              />
 
               <rect
-                x={x - 20}
+                x={x - halfBox}
                 y={yScale(s.q3)}
-                width={40}
+                width={boxWidth}
                 height={yScale(s.q1) - yScale(s.q3)}
                 fill={color(s.code)}
                 opacity={0.4}
                 stroke={color(s.code)}
               />
-              <line x1={x - 20} x2={x + 20} y1={yScale(s.q2)} y2={yScale(s.q2)} stroke="#0f172a" strokeWidth={2} />
+              <line
+                x1={x - halfBox}
+                x2={x + halfBox}
+                y1={yScale(s.q2)}
+                y2={yScale(s.q2)}
+                stroke="#0f172a"
+                strokeWidth={2}
+              />
 
               {grouped[s.code].map((v, idx) => (
-                <circle key={idx} cx={jitter[idx]} cy={yScale(v)} r={4} fill={color(s.code)} opacity={0.55} />
+                <circle key={idx} cx={jitter[idx]} cy={yScale(v)} r={dotRadius} fill={color(s.code)} opacity={0.55} />
               ))}
 
               <text x={x} y={height - margin.bottom + 26} textAnchor="middle" className="tick">
                 {s.label}
               </text>
+
+              {/* Inline labels like a boxplot guide */}
+              {[
+                { label: 'Q3', value: s.q3 },
+                { label: 'Q2', value: s.q2 },
+                { label: 'Q1', value: s.q1 },
+              ].map((p, idx) => {
+                const y = yScale(p.value);
+                const startX = x + halfBox;
+                const endX = startX + labelOffset;
+                return (
+                  <g key={`${p.label}-${s.code}-${idx}`}>
+                    <line
+                      x1={startX}
+                      x2={endX}
+                      y1={y}
+                      y2={y}
+                      stroke={color(s.code)}
+                      strokeDasharray={p.label === 'Q2' ? undefined : '3 2'}
+                      strokeWidth={p.label === 'Q2' ? 2 : 1}
+                      opacity={0.8}
+                    />
+                    <text x={endX + labelGap} y={y + 4} className="tag" textAnchor="start">
+                      {p.label} {p.value.toFixed(1)}%
+                    </text>
+                  </g>
+                );
+              })}
             </g>
           );
         })}
