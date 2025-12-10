@@ -3,13 +3,21 @@ import * as d3 from 'd3';
 import type { VDemRow } from '../../types';
 import { computeRegression } from '../../utils/dataTransforms';
 
-type Point = { x: number; y: number };
+type Point = { x: number; y: number; country?: string };
 type Bucket = { id: string; label: string; color: string; points: Point[] };
 
+const geometricMean = (values: number[]): number | null => {
+  const valid = values.filter((v) => v > 0);
+  if (!valid.length) return null;
+  const meanLog = d3.mean(valid, (v) => Math.log(v));
+  return meanLog == null ? null : Math.exp(meanLog);
+};
+
 const bucketMeta: Bucket[] = [
-  { id: 'low', label: '저소득', color: '#5ea9ff', points: [] },
-  { id: 'mid', label: '중간', color: '#a855f7', points: [] },
-  { id: 'high', label: '고소득', color: '#f59e0b', points: [] },
+  { id: 'q1', label: '1분위(저소득)', color: '#5ea9ff', points: [] },
+  { id: 'q2', label: '2분위', color: '#22d3ee', points: [] },
+  { id: 'q3', label: '3분위', color: '#a855f7', points: [] },
+  { id: 'q4', label: '4분위(고소득)', color: '#f59e0b', points: [] },
 ];
 
 export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
@@ -17,7 +25,8 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
     () =>
       data.filter(
         (d) =>
-          d.year == 2019 &&
+          d.year >= 2010 &&
+          d.year <= 2019 &&
           d.polyarchy !== null &&
           d.gdpGrowth !== null &&
           d.gdppc !== null,
@@ -26,14 +35,36 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
   );
 
   const buckets = useMemo(() => {
-    const gdppcValues = filtered.map((d) => d.gdppc as number);
-    const q33 = d3.quantile(gdppcValues, 1 / 3) ?? 0;
-    const q66 = d3.quantile(gdppcValues, 2 / 3) ?? q33;
+    // 국가별로 2000~2019 평균 계산
+    const byCountry = d3.group(filtered, (d) => d.country);
+    const countryPoints: Array<{ x: number; y: number; g: number; country: string }> = [];
+    byCountry.forEach((rows, country) => {
+      const xs = rows.map((r) => r.polyarchy).filter((v): v is number => v != null && v > 0);
+      const gdpGrowthFactors = rows
+        .map((r) => r.gdpGrowth)
+        .filter((v): v is number => v != null)
+        .map((v) => 1 + v / 100)
+        .filter((v) => v > 0);
+      const gs = rows.map((r) => r.gdppc).filter((v): v is number => v != null && v > 0);
+
+      const x = geometricMean(xs);
+      const growthFactor = geometricMean(gdpGrowthFactors);
+      const y = growthFactor == null ? null : (growthFactor - 1) * 100;
+      const g = geometricMean(gs);
+      if (x == null || y == null || g == null) return;
+      countryPoints.push({ x, y, g, country });
+    });
+
+    const gdppcValues = countryPoints.map((p) => p.g);
+    const q1 = d3.quantile(gdppcValues, 0.25) ?? 0;
+    const q2 = d3.quantile(gdppcValues, 0.5) ?? q1;
+    const q3 = d3.quantile(gdppcValues, 0.75) ?? q2;
 
     const bucketFor = (v: number): string => {
-      if (v <= q33) return 'low';
-      if (v <= q66) return 'mid';
-      return 'high';
+      if (v <= q1) return 'q1';
+      if (v <= q2) return 'q2';
+      if (v <= q3) return 'q3';
+      return 'q4';
     };
 
     const acc: Record<string, Bucket> = {};
@@ -41,12 +72,12 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
       acc[b.id] = { ...b, points: [] };
     });
 
-    filtered.forEach((d) => {
-      const key = bucketFor(d.gdppc as number);
-      acc[key].points.push({ x: d.polyarchy as number, y: d.gdpGrowth as number });
+    countryPoints.forEach((p) => {
+      const key = bucketFor(p.g);
+      acc[key].points.push({ x: p.x, y: p.y, country: p.country });
     });
 
-    return Object.values(acc);
+    return bucketMeta.map((b) => acc[b.id]);
   }, [filtered]);
 
   const allPoints = buckets.flatMap((b) => b.points);
@@ -64,7 +95,7 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
     ) ?? 10,
   ];
 
-  const panelWidth = 320;
+  const panelWidth = 340;
   const panelHeight = 260;
   const margin = { top: 32, right: 18, bottom: 32, left: 42 };
 
@@ -74,14 +105,14 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
   return (
     <div className="card">
       <div className="legend">
-        {buckets.map((b) => (
+        {bucketMeta.map((b) => (
           <span key={b.id} className="legend-item">
             <span className="legend-swatch" style={{ background: b.color }} />
             {b.label}
           </span>
         ))}
       </div>
-      <div className="facet-grid">
+      <div className="facet-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
         {buckets.map((bucket) => {
           const xScale = d3.scaleLinear().domain(xDomain).range([margin.left, panelWidth - margin.right]);
           const yScale = d3.scaleLinear().domain(yDomain).range([panelHeight - margin.bottom, margin.top]);
@@ -150,7 +181,8 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
         })}
       </div>
       <div className="footnote">
-        2019년 1인당 GDP 삼분위로 3개 소득 구간을 만들고 같은 축을 사용했습니다. 각 패널의 추세선만 남겨 전체적 착시 없이 그룹별 패턴을 강조합니다.
+        2000~2019년 1인당 GDP를 사분위로 4개 소득 구간으로 나누고 같은 축을 사용했습니다. 각 패널의 추세선만 남겨
+        그룹별 패턴을 강조합니다.
       </div>
     </div>
   );
