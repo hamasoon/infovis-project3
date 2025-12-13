@@ -1,21 +1,23 @@
 .app {
-  max-width: 1200px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 32px 24px 64px;
+  padding: 32px 22px 72px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 30px;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: 1.4fr 0.6fr;
-  gap: 18px;
-  background: linear-gradient(135deg, rgba(42, 59, 96, 0.5), rgba(10, 16, 30, 0.8));
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 24px 24px 20px;
-  box-shadow: 0 15px 55px rgba(3, 7, 18, 0.45);
+  grid-template-columns: 1fr;
+  gap: 12px;
+  background: radial-gradient(circle at 20% 20%, rgba(103, 232, 249, 0.08), rgba(12, 18, 32, 0.95)),
+    linear-gradient(160deg, rgba(15, 23, 42, 0.95), rgba(17, 24, 39, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 26px 24px 22px;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
 }
 
 .eyebrow {
@@ -35,7 +37,7 @@ h1 {
 .lede {
   color: var(--muted);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .meta {
@@ -63,26 +65,33 @@ h1 {
 .content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 26px;
 }
 
 .section {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 18px;
-  padding: 18px 18px 10px;
+  padding: 18px 18px 12px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32);
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .section-header h2 {
-  margin: 4px 0 4px;
+  margin: 0;
 }
 
 .section-header .kicker {
-  color: #a5b4fc;
-  letter-spacing: 0.08em;
+  color: #8adcf4;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   font-size: 12px;
 }
@@ -90,56 +99,63 @@ h1 {
 .section-copy {
   margin: 0;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .card {
-  background: var(--panel);
-  border-radius: 14px;
-  padding: 12px;
-  border: 1px solid var(--stroke);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.92), rgba(10, 16, 30, 0.92));
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
 }
 
 .switcher {
   display: inline-flex;
   gap: 10px;
-  margin: 4px 0 10px;
+  margin: 6px 0 12px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
 }
 
 .btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--text);
-  padding: 8px 12px;
+  padding: 9px 14px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.15s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .btn:hover {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 .btn.active {
   background: linear-gradient(135deg, #22d3ee, #8b5cf6);
   border-color: transparent;
   color: #0b1020;
-  box-shadow: 0 6px 18px rgba(34, 211, 238, 0.25);
+  box-shadow: 0 8px 20px rgba(34, 211, 238, 0.22);
 }
 
 .chart {
   width: 100%;
   height: auto;
+  border-radius: 14px;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.02), transparent 55%);
 }
 
 .grid {
-  stroke: rgba(255, 255, 255, 0.05);
+  stroke: rgba(255, 255, 255, 0.06);
 }
 
 .tick {
-  fill: var(--muted);
+  fill: #cbd5e1;
   font-size: 12px;
 }
 
@@ -165,18 +181,23 @@ h1 {
 }
 
 .footnote {
-  margin-top: 8px;
+  margin-top: 10px;
   color: var(--muted);
   font-size: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 8px;
 }
 
 .legend {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
-  padding: 6px 8px;
-  color: var(--muted);
+  padding: 8px 10px;
+  color: #cbd5e1;
   font-size: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
 }
 
 .legend-item {
@@ -190,18 +211,19 @@ h1 {
   height: 12px;
   border-radius: 4px;
   display: inline-block;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.9);
 }
 
 .facet-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .facet-title {
-  fill: #e2e8f0;
+  fill: #d7e3f4;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .callout {
@@ -210,6 +232,7 @@ h1 {
   color: var(--text);
   border-radius: 10px;
   border: 1px solid rgba(103, 232, 249, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .callout.error {
@@ -221,9 +244,13 @@ h1 {
   display: flex;
   gap: 12px;
   align-items: center;
-  color: var(--muted);
+  color: #cbd5e1;
   font-size: 13px;
-  margin: 6px 8px 0;
+  margin: 8px 8px 4px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
 }
 
 .legend-dot {
@@ -232,6 +259,7 @@ h1 {
   border-radius: 50%;
   display: inline-block;
   border: 2px solid #0f172a;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.95);
 }
 
 .legend-dot.blue {

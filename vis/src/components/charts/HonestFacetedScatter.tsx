@@ -131,7 +131,7 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
               {xTicks.map((t) => (
                 <g key={`x-${t}`} transform={`translate(${xScale(t)},0)`}>
                   <line y1={margin.top} y2={panelHeight - margin.bottom} className="grid" strokeDasharray="2 4" />
-                  <text y={panelHeight - margin.bottom + 18} className="tick" textAnchor="middle">
+                  <text y={panelHeight - margin.bottom + 18} className="tick" textAnchor="middle" style={{ fontSize: 8, fill: '#9ca3af', fontWeight: 300 }}>
                     {t.toFixed(1)}
                   </text>
                 </g>
@@ -139,13 +139,18 @@ export function HonestFacetedScatter({ data }: { data: VDemRow[] }) {
               {yTicks.map((t) => (
                 <g key={`y-${t}`} transform={`translate(0,${yScale(t)})`}>
                   <line x1={margin.left} x2={panelWidth - margin.right} className="grid" strokeDasharray="2 4" />
-                  <text x={margin.left - 10} className="tick" textAnchor="end">
+                  <text x={margin.left - 10} className="tick" textAnchor="end" style={{ fontSize: 8, fill: '#9ca3af', fontWeight: 300 }}>
                     {t.toFixed(1)}%
                   </text>
                 </g>
               ))}
 
-              <text x={margin.left} y={margin.top - 12} className="facet-title">
+              <text
+                x={margin.left}
+                y={margin.top - 12}
+                className="facet-title"
+                style={{ fontSize: 8, fill: '#9ca3af', fontWeight: 300 }}
+              >
                 {bucket.label} · n={bucket.points.length}
               </text>
 
